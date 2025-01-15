@@ -5,25 +5,31 @@ from tqdm import tqdm
 from sklearn.metrics import accuracy_score
 import tensorflow as tf
 
-class FullyConNeuralNet:
+class DenseResidualNet:
     def __init__(self, input_shape, move_cap, init=True):
         if not init:
             return
 
         # Input layer
-        position_input = keras.Input(input_shape)  # Flattening handled outside for clarity
+        position_input = keras.Input(input_shape)
 
-        # Fully connected hidden layers
-        hidden_layer1 = keras.layers.Dense(512, activation="relu")(position_input)
-        hidden_layer2 = keras.layers.Dense(256, activation="relu")(hidden_layer1)
-        hidden_layer3 = keras.layers.Dense(128, activation="relu")(hidden_layer2)
+        # Initial dense layer
+        x = keras.layers.Dense(128, activation="relu")(position_input)
+
+        # Dense residual blocks
+        for _ in range(4):  # 4 residual blocks as an example
+            shortcut = x
+            x = keras.layers.Dense(128, activation="relu")(x)
+            x = keras.layers.Dropout(0.3)(x)  # Regularization
+            x = keras.layers.Dense(128, activation="relu")(x)
+            x = keras.layers.Add()([x, shortcut])  # Residual connection
 
         # Policy head (move probabilities)
-        policy = keras.layers.Conv2D(move_cap, (1, 1), activation="elu", padding="same")(hidden_layer3)
+        policy = keras.layers.Conv2D(move_cap, (1, 1), activation="elu", padding="same")(x)
         policy = keras.layers.Flatten()(policy)
         policy_output = keras.layers.Softmax(name="policy_output")(policy)
         # Value head (board evaluation)
-        val = keras.layers.Conv2D(16, (1, 1), name="value_conv", activation="elu", padding="same")(hidden_layer3)
+        val = keras.layers.Conv2D(16, (1, 1), name="value_conv", activation="elu", padding="same")(x)
         val = keras.layers.Flatten()(val)
         # val = keras.layers.Dense(256, activation="elu")(val)
         value_output = keras.layers.Dense(1, name="value_output", activation="tanh")(val)

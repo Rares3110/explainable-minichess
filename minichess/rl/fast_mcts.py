@@ -1,4 +1,5 @@
 from shutil import move
+from minichess.agents.drn import DenseResidualNet
 from minichess.agents.fcnn import FullyConNeuralNet
 from minichess.agents.lite_model import LiteModel
 from minichess.agents.predictor_convnet import PredictorConvNet
@@ -147,6 +148,8 @@ if __name__ == "__main__":
         agent = ConvNet(episode_game.agent_board_state().shape, move_cap)
     elif TRAINED_MODEL == "FullyConNeuralNet":
         agent = FullyConNeuralNet(episode_game.agent_board_state().shape, move_cap)
+    elif TRAINED_MODEL == "DenseResidualNet":
+        agent = DenseResidualNet(episode_game.agent_board_state().shape, move_cap)
     else:
         agent = ConvNet(episode_game.agent_board_state().shape, move_cap)
 
