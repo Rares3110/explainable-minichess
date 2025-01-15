@@ -1,6 +1,8 @@
 from shutil import move
+from minichess.agents.fcnn import FullyConNeuralNet
 from minichess.agents.lite_model import LiteModel
 from minichess.agents.predictor_convnet import PredictorConvNet
+from minichess.agents.resnet import ResNet
 from minichess.chess.move_utils import calculate_all_moves, index_to_move
 from minichess.rl.chess_helpers import get_initial_chess_object, get_settings, launch_tensorboard, random_string
 from montecarlo.node import Node
@@ -114,6 +116,7 @@ if __name__ == "__main__":
 
     USE_TENSORBOARD = settings["use_tensorboard"]
 
+    TRAINED_MODEL = settings["trained_model"]
     EPOCHS = settings["epoch_cap"]
     SIM_STEPS = settings["simulation_steps"]
     REPLAY_BUFFER_CAP = settings["replay_buffer_size"]
@@ -138,7 +141,14 @@ if __name__ == "__main__":
     all_moves, all_moves_inv = calculate_all_moves(dims)
     move_cap = all_moves_inv.shape[0]
 
-    agent = ConvNet(episode_game.agent_board_state().shape, move_cap)
+    if TRAINED_MODEL == "ResNet":
+        agent = ResNet(episode_game.agent_board_state().shape, move_cap)
+    elif TRAINED_MODEL == "ConvNet":
+        agent = ConvNet(episode_game.agent_board_state().shape, move_cap)
+    elif TRAINED_MODEL == "FullyConNeuralNet":
+        agent = FullyConNeuralNet(episode_game.agent_board_state().shape, move_cap)
+    else:
+        agent = ConvNet(episode_game.agent_board_state().shape, move_cap)
 
     state_buffer = []
     distribution_buffer = []

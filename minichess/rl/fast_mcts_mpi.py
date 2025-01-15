@@ -1,4 +1,5 @@
 from shutil import move
+from minichess.agents.fcnn import FullyConNeuralNet
 from minichess.agents.lite_model import LiteModel
 from minichess.agents.predictor_convnet import PredictorConvNet
 from minichess.chess.move_utils import calculate_all_moves, index_to_move
@@ -121,7 +122,7 @@ if __name__ == "__main__":
 
     USE_TENSORBOARD = settings["use_tensorboard"]
 
-    USE_RESNET = settings["use_resnet"]
+    SIMULATIONS_MODEL = settings["simulations_model"]
     EPOCHS = settings["epoch_cap"]
     SIM_STEPS = settings["simulation_steps"]
     REPLAY_BUFFER_CAP = settings["replay_buffer_size"]
@@ -159,10 +160,15 @@ if __name__ == "__main__":
         launch_tensorboard(base_summary_dir)
 
     if rank == 0:
-        if USE_RESNET:
+        if SIMULATIONS_MODEL == "ResNet":
             agent = ResNet(episode_game.agent_board_state().shape, move_cap)
+        elif SIMULATIONS_MODEL == "ConvNet":
+            agent = ConvNet(episode_game.agent_board_state().shape, move_cap)
+        elif SIMULATIONS_MODEL == "FullyConNeuralNet":
+            agent = FullyConNeuralNet(episode_game.agent_board_state().shape, move_cap)
         else:
             agent = ConvNet(episode_game.agent_board_state().shape, move_cap)
+
         checkpoint_path = checkpoint(0, agent.model, full_name, model_name, None)
 
     for epoch in range(1, EPOCHS + 1):
